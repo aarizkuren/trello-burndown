@@ -28,4 +28,15 @@ if (!fs.existsSync(settings.configPath)) {
 }
 
 var server = require('./lib/server');
-require('http').createServer(server).listen(settings.port);
+if (settings.useHttpAuth) {
+  var basicAuth = require('http-auth').basic({
+    realm: "Burndown."
+  }, (username, password, callback) => {
+    callback(username === settings.httpUsername && password === settings.httpPassword)
+	})
+
+  require('http').createServer(basicAuth, (server)).listen(settings.port);
+} else {
+  require('http').createServer(server).listen(settings.port);
+}
+
